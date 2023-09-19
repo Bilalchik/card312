@@ -1,10 +1,12 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from django.db.models import Avg
 
 from apps.users.models import Partners, User
 from apps.categories.models import Service_category
 
-from apps.service.models import ProductImage, Characteristic, Product, AdditionalInformation, Promotion, PromotionType
+from apps.service.models import (ProductImage, Characteristic, Product, AdditionalInformation, Promotion, PromotionType,
+                                 ProductRating)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -117,22 +119,36 @@ class AdditionalInformationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ProductListSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
-    images = ProductImageListSerializer(many=True)
-    characteristic = AdditionalInformationSerializer(many=True)
-    category = CategoryListSerializer()
-
-    class Meta:
-        model = Product
-        fields = '__all__'
-
-
 class PromotionTypeListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PromotionType
         fields = '__all__'
+
+
+class PromotionListSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    promotion_type = PromotionTypeListSerializer()
+
+    class Meta:
+        model = Promotion
+        fields = '__all__'
+
+
+class ProductListSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    images = ProductImageListSerializer(many=True)
+    characteristic = AdditionalInformationSerializer(many=True)
+    category = CategoryListSerializer()
+    promotions = PromotionListSerializer(many=True)
+    average_rating = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Product
+        fields = '__all__'
+
+    def get_average_rating(self, obj):
+        return ProductRating.objects.filter(product=obj).aggregate(Avg('rating'))['rating__avg'] or 0
 
 
 class PromotionCreateSerializer(serializers.ModelSerializer):
@@ -167,4 +183,11 @@ class PromotionUpdateSerializer(serializers.ModelSerializer):
             'cashback_amount',
             'products'
         )
+
+    def validate(self, data):
+        user = data['user']
+        if user.user_type == 1:
+            raise ValidationError({'user': 'Акцию может изменять только Партнер'})
+        return data
+
 

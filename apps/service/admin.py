@@ -1,5 +1,6 @@
 from django.contrib import admin
-from apps.service.models import ProductImage, Characteristic, AdditionalInformation, Product, PromotionType, Promotion
+from apps.service.models import (ProductImage, Characteristic, AdditionalInformation, Product, PromotionType, Promotion,
+                                 ProductRating)
 
 
 class ProductAdmin(admin.ModelAdmin):
@@ -16,9 +17,15 @@ class PromotionAdmin(admin.ModelAdmin):
     search_fields = ('user', 'title')
 
 
+class ProductRatingAdmin(admin.ModelAdmin):
+    list_display = ('user', 'product', 'rating', 'created_date')
+    list_display_links = list_display
+
+
 admin.site.register(ProductImage)
 admin.site.register(Characteristic)
 admin.site.register(AdditionalInformation)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(PromotionType)
 admin.site.register(Promotion, PromotionAdmin)
+admin.site.register(ProductRating, ProductRatingAdmin)

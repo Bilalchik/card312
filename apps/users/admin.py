@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django import forms
 from django.contrib.auth.models import Group
 
-from apps.users.models import User, Basket, Mycard, Bankcard, Subscr, Coment, Favorites, Partners, Like, BasicUser
+from apps.users.models import User, Basket, Mycard, Bankcard, Subscription, Coment, Favorites, Partners, Like, BasicUser
 
 
 class UserCreationForm(forms.ModelForm):
@@ -87,7 +87,7 @@ admin.site.unregister(Group)
 admin .site.register(Basket)
 admin.site.register(Mycard)
 admin.site.register(Bankcard)
-admin.site.register(Subscr)
+admin.site.register(Subscription)
 admin.site.register(Coment)
 # admin.site.register(Like);
 admin.site.register(Favorites)

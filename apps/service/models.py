@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class ProductImage(models.Model):
@@ -105,7 +106,11 @@ class Promotion(models.Model):
         decimal_places=2,
         verbose_name='Количество кэшбека'
     )
-    products = models.ManyToManyField(Product, verbose_name='Выберите товар/услугу для акций и скидки')
+    products = models.ManyToManyField(
+        Product,
+        verbose_name='Выберите товар/услугу для акций и скидки',
+        related_name='promotions'
+    )
     created_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
 
     def __str__(self):
@@ -114,3 +119,19 @@ class Promotion(models.Model):
     class Meta:
         verbose_name = 'Акция/Скидка'
         verbose_name_plural = 'Акции/Скидки'
+
+
+class ProductRating(models.Model):
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, verbose_name='Пользователь')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='Товар/Услуга', related_name='ratings')
+    rating = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    created_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+
+    def __str__(self):
+        return f'{self.user} --> {self.product} [{self.rating}]'
+
+    class Meta:
+        verbose_name = 'Рейтинг продукта'
+        verbose_name_plural = 'Рейтинг продуктов'
+
+

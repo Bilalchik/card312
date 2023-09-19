@@ -185,20 +185,19 @@ class Bankcard(models.Model):
         def __str__(self):
             return self.name_plural
 
-        
-class Subscr(models.Model):
-        
-        class Meta:
-            verbose_name = 'Подписки'
-            verbose_name_plural = 'Подписки'
-            
-            
-        user = models.ForeignKey("User",on_delete=models.CASCADE)
-        image = models.ImageField(verbose_name='Фотография', upload_to='apps/images/users')    
-        name = models.CharField(verbose_name="Название", max_length=50)
-        
-        def __str__(self):
-            return self.name
+
+class Subscription(models.Model):
+    follower = models.ForeignKey(User, related_name='following', on_delete=models.CASCADE, verbose_name='Подписчик')
+    following = models.ForeignKey(User, related_name='followers', on_delete=models.CASCADE, verbose_name='Подписка')
+    created_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('follower', 'following')
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+
+    def __str__(self):
+        return f"{self.follower} --> {self.following}"
         
         
 class Coment(models.Model):
@@ -250,7 +249,6 @@ class Likes(models.Model):
 
 
 class Favorites(models.Model):
-        
         class Meta:
             verbose_name = 'Избранное'
             verbose_name_plural = 'Избранное'

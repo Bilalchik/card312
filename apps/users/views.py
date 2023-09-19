@@ -9,15 +9,16 @@ from rest_framework import viewsets, permissions, status
 from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
 
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from apps.users.models import User, BasicUser, Basket, Mycard, Bankcard, Subscr, Coment, Favorites, Likes
+from apps.users.models import User, BasicUser, Basket, Mycard, Bankcard, Subscription, Coment, Favorites, Likes
 from apps.users.serializers import (UserSerializer, UserCRUDSerializer, CustomTokenRefreshSerializer,
                                     SendMessageSerializer, BasicUserRegisterSerializer, PartnerRegisterSerializer,
-                                    SendMailSerializer)
+                                    SendMailSerializer, SubscriptionListSerializer, SubscriptionsCreateSerializer)
 
 from apps.utils.main import generateError, generateAuthInfo
 
@@ -209,16 +210,11 @@ class BankcardCreateListView(generics.ListCreateAPIView):
 class BankcardDeteleView(generics.DestroyAPIView):
     # serializer = BasketSerializer
     queryset = Bankcard.objects.all()
-    
-    
-class SubscrCreateListView(generics.ListCreateAPIView):
-    # serializer = BasketSerializer
-    queryset = Subscr.objects.all()
 
 
 class SubscrDeteleView(generics.DestroyAPIView):
     # serializer = BasketSerializer
-    queryset = Subscr.objects.all()
+    queryset = Subscription.objects.all()
     
     
 class ComentCreateListView(generics.ListCreateAPIView):
@@ -326,3 +322,30 @@ class PartnerRegistrationView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SubscriptionsListUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        queryset = Subscription.objects.filter(follower=self.request.user.id)
+        serializer = SubscriptionListSerializer(queryset, many=True)
+
+        return Response(serializer.data)
+
+    def delete(self, request):
+        subscription_id = request.data.get('id')
+        if subscription_id is None:
+            return Response({'error': 'Требуется идентификатор удаляемой подписки.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            subscription = Subscription.objects.get(id=subscription_id, follower=self.request.user.id)
+            subscription.delete()
+            return Response({'message': 'Объект успешно удален.'}, status=status.HTTP_204_NO_CONTENT)
+        except Subscription.DoesNotExist:
+            return Response({'error': 'Объект не найдена.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class SubscriptionsCreateView(generics.CreateAPIView):
+    serializer_class = SubscriptionsCreateSerializer
+    permission_classes = [IsAuthenticated]

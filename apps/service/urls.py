@@ -7,4 +7,5 @@ urlpatterns = [
     path('my_products/', views.MyProductListView.as_view()),
     path('promotion_create/', views.PromotionCreateView.as_view()),
     path('promotion_update/<int:pk>/', views.PromotionUpdateView.as_view()),
+    path('product_list/', views.ProductListView.as_view()),
 ]

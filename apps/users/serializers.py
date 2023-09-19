@@ -3,8 +3,9 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.state import token_backend
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.exceptions import ValidationError
 
-from apps.users.models import User, Basket, Mycard, Bankcard, Subscr, Coment, Like, Favorites, Partners, BasicUser
+from apps.users.models import User, Basket, Mycard, Bankcard, Subscription, Coment, Like, Favorites, Partners, BasicUser
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -93,10 +94,12 @@ class BankcardSerializer(serializers.Serializer):
         fields = "__all__"
 
 
-class SubscrSerializer(serializers.Serializer):
+class SubscriptionListSerializer(serializers.ModelSerializer):
+    follower = UserSerializer()
+    following = UserSerializer()
     
     class Meta:
-        model = Subscr
+        model = Subscription
         fields = "__all__"
 
 
@@ -132,4 +135,26 @@ class PartnerRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Partners
+        fields = '__all__'
+
+
+class SubscriptionsCreateSerializer(serializers.ModelSerializer):
+    follower = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Subscription
+        fields = "__all__"
+
+    def validate(self, data):
+        follower = data['follower']
+        following = data['following']
+
+        if follower == following:
+            raise ValidationError({'following': 'Вы не можете подписаться на самого себя!'})
+        return data
+
+
+class SubscriptionsUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
         fields = '__all__'

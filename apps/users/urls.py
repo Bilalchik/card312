@@ -43,6 +43,9 @@ urlpatterns = [
     path('send-mail-message/',  SendMailAPIView.as_view()),
     path('send-mail-order/', SendMailUserApiView.as_view()),
 
+    path('subscriptions/', views.SubscriptionsListUpdateView.as_view()),
+    path('subscriptions_create/', views.SubscriptionsCreateView.as_view()),
+
     # path('', views.PostView.as_view()),
     # path('<int:pk>/', views.PostDetail.as_view()),
     path('<int:pk>/add_likes/', views.AddLike.as_view(), name='add_likes'),
